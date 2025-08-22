@@ -15,9 +15,25 @@ model User{
   username String @unique
   fullname String?
   hash String
+  refreshToken String?
   todos Todo[]
-
+  tokens Token[]
   @@map("Users")
+}
+
+model Token{
+  id String @id @default(cuid())
+  jti String @unique
+  userId String
+  expiresAt DateTime
+  revoked Boolean @default(false)
+  type TokenType
+
+  user User @relation(fields: [userId], references: [id],onDelete: Cascade)
+  
+  @@index([userId, type])
+  @@index([jti])
+  @@map("tokens")
 }
 
 model Todo{
@@ -37,4 +53,9 @@ enum TodoStatus {
   PENDING
   INPROGRESS
   DONE
+}
+
+enum TokenType {
+  ACCESS
+  REFRESH
 }
