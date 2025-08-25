@@ -117,6 +117,6 @@ export class AuthService {
   }
 
   async logout(userId: string) {
-   /* ..Burada kaldık hüsocan.. */
+   return await this.tokenService.revokeUserToken(userId);
   }
 }

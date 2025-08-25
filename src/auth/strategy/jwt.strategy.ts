@@ -26,11 +26,12 @@ export class JwtStrategy extends PassportStrategy(Strategy,'jwt') {
 
     if(!user) throw new UnauthorizedException("Unauthorized jwt")
     
-    const isValid = this.tokenService.validateToken(payload.jti,TokenType.ACCESS);
+    const isValid = await this.tokenService.validateToken(payload.jti,TokenType.ACCESS);
+    
     if (!isValid) throw new UnauthorizedException('Token revoked or expired');
     
 
-    const {hash,...result} = user
+    const {hash,refreshToken,...result} = user
     
     
    return result;
