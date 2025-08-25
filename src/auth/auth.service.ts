@@ -42,7 +42,14 @@ export class AuthService {
     });
 
     if (!user) throw new ForbiddenException('Credentials incorrect');
-
+    
+    if (!user.isActive) {
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { isActive: true },
+      });
+      user.isActive = true;
+    }
     const passwordMatch = await argon.verify(user.hash, dto.password);
     if (!passwordMatch) throw new ForbiddenException('Credentials incorrect');
 
@@ -53,14 +60,13 @@ export class AuthService {
   }
 
   async refresh(refreshToken: string) {
-    
     try {
       const payload = await this.tokenService.verifyToken(
         refreshToken,
         TokenType.REFRESH,
       );
-      
-     const tokenRecord= await this.prisma.token.findFirst({
+
+      const tokenRecord = await this.prisma.token.findFirst({
         where: {
           jti: payload.jti,
           type: TokenType.REFRESH,
@@ -69,16 +75,16 @@ export class AuthService {
             gt: new Date(),
           },
         },
-        include:{
-          user:{
-            select:{
-              id:true,
-              username:true
-            }
-          }
-        }
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+            },
+          },
+        },
       });
-      
+
       if (!tokenRecord) {
         throw new UnauthorizedException('Invalid refresh token');
       }
@@ -92,16 +98,16 @@ export class AuthService {
           revoked: true,
         },
       });
-      
-       const accessToken = this.tokenService.signToken(tokenRecord.userId,tokenRecord.user.username)
 
-       return accessToken;
+      const accessToken = this.tokenService.signToken(
+        tokenRecord.userId,
+        tokenRecord.user.username,
+      );
 
-      
-
+      return accessToken;
     } catch (error) {
       console.log(error);
-      
+
       throw new UnauthorizedException('Invalid refresh token');
     }
   }
@@ -117,6 +123,6 @@ export class AuthService {
   }
 
   async logout(userId: string) {
-   /* ..Burada kaldık hüsocan.. */
+    return await this.tokenService.revokeUserToken(userId);
   }
 }

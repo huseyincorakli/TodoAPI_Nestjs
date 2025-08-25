@@ -21,16 +21,18 @@ export class JwtStrategy extends PassportStrategy(Strategy,'jwt') {
   async validate(payload:any) {
     
    const user = await this.prisma.user.findUnique({where:{
-      id:payload.sub
+      id:payload.sub,
+      isActive:true
     }})
 
-    if(!user) throw new UnauthorizedException("Unauthorized jwt")
+    if(!user) throw new UnauthorizedException("We couldn't find any active users. Try again")
     
-    const isValid = this.tokenService.validateToken(payload.jti,TokenType.ACCESS);
+    const isValid = await this.tokenService.validateToken(payload.jti,TokenType.ACCESS);
+    
     if (!isValid) throw new UnauthorizedException('Token revoked or expired');
     
 
-    const {hash,...result} = user
+    const {hash,refreshToken,...result} = user
     
     
    return result;

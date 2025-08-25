@@ -18,6 +18,7 @@ model User{
   refreshToken String?
   todos Todo[]
   tokens Token[]
+  isActive Boolean @default(true)
   @@map("Users")
 }
 
@@ -44,7 +45,7 @@ model Todo{
   updateAt DateTime @updatedAt
   status TodoStatus @default(PENDING)
   userId String
-  user User @relation(fields: [userId],references: [id])
+  user User @relation(fields: [userId],references: [id],onDelete: Cascade)
 
   @@map("Todos")
 }

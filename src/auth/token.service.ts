@@ -4,7 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { v4 as uuid } from 'uuid';
 import { PrismaService } from '../prisma/prisma.service';
 import { TokenType } from '@prisma/client';
-import { Cron, Interval } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class TokenService {
@@ -26,7 +26,7 @@ export class TokenService {
     const accessToken = await this.jwtService.signAsync(
       { sub: userId, username, jti: accessJti,type:'access' },
       {
-        expiresIn: '1m',
+        expiresIn: '15m',
         secret: this.config.get('SECRET_KEY'),
       },
     );
@@ -72,10 +72,11 @@ export class TokenService {
         }
       }
     })
+    
     return token!=null;
   }
 
-  private  async revokeUserToken(userId: string) {
+    async revokeUserToken(userId: string) {
      await this.prisma.token.updateMany({
       where: {
         userId: userId,
@@ -84,6 +85,10 @@ export class TokenService {
         revoked: true,
       },
     });
+
+    await this.prisma.token.deleteMany({
+      where:{AND:[{userId},{revoked:true}]},
+    })
   }
 
 
@@ -122,7 +127,7 @@ export class TokenService {
   });
   }
 
-   @Cron('*/10 * * * *')
+   @Cron('*/1 * * * *')
   async handleCron() {
    try {
    await this.cleanExpiredAndRevokedTokens()
