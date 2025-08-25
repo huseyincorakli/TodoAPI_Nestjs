@@ -38,4 +38,31 @@ export class UserService {
             throw new BadRequestException('CREATE USER ERROR');
     }
   }
+
+  async freezeAccount(userId:string){
+     try {
+      await this.prisma.user.update({
+      where:{id:userId},data:{
+        isActive:false
+      }
+    })
+
+    return {
+      success:true,
+      message:"Your account has been frozen until you log in again."
+    }
+     } catch (error) {
+      return {
+        success:false,
+        message:"An error occured while freezing your account try later."
+      }
+     }
+  }
+
+
+  async deleteAccount(userId:string){
+     await this.prisma.user.delete({
+      where:{id:userId}
+    })
+  }
 }
