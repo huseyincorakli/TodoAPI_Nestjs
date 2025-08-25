@@ -17,6 +17,7 @@ import { EditTodoDto } from './dtos/edit-todo.dto';
 import { TodoService } from './todo.service';
 import { CreateTodosDto, CreateTodoDto } from './dtos/create-todo.dto';
 import { TodoStatus } from '@prisma/client';
+import { ClampIntPipe } from '../common';
 
 @Controller('todos')
 @UseGuards(JwtGuard)
@@ -26,17 +27,15 @@ export class TodoController {
 
   @Get()
   @ApiQuery({ name: 'status', required: false, enum: TodoStatus })
-  @ApiQuery({ name: 'page', required: false, type: Number ,default:1})
-@ApiQuery({ name: 'size', required: false, type: Number ,default:10})
+  @ApiQuery({ name: 'page', required: false, type: Number, default: 1 })
+  @ApiQuery({ name: 'size', required: false, type: Number, default: 10 })
   async getAllUserTodos(
     @GetUser('id') userId: string,
-    @Query("page",ParseIntPipe) page:number=1,
-    @Query("size",ParseIntPipe) size:number=10,
-    @Query("status") status?:TodoStatus,
-) {
-  console.log(page,size,status);
-  
-    return await this.todoService.getUserAllTodos(userId,page,size,status);
+    @Query('page', ParseIntPipe,ClampIntPipe) page: number = 1,
+    @Query('size', ParseIntPipe,ClampIntPipe) size: number = 10,
+    @Query('status') status?: TodoStatus,
+  ) {
+    return await this.todoService.getUserAllTodos(userId, page, size, status);
   }
 
   @Post()
