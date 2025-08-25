@@ -11,7 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { JwtGuard } from '../auth/guard';
-import { ApiBearerAuth, ApiProperty } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiProperty, ApiQuery } from '@nestjs/swagger';
 import { GetUser } from '../auth/decorator/get-user.decorator';
 import { EditTodoDto } from './dtos/edit-todo.dto';
 import { TodoService } from './todo.service';
@@ -25,12 +25,17 @@ export class TodoController {
   constructor(private todoService: TodoService) {}
 
   @Get()
+  @ApiQuery({ name: 'status', required: false, enum: TodoStatus })
+  @ApiQuery({ name: 'page', required: false, type: Number ,default:1})
+@ApiQuery({ name: 'size', required: false, type: Number ,default:10})
   async getAllUserTodos(
+    @GetUser('id') userId: string,
     @Query("page",ParseIntPipe) page:number=1,
     @Query("size",ParseIntPipe) size:number=10,
-    @Query("status") status:TodoStatus,
-    @GetUser('id') userId: string
+    @Query("status") status?:TodoStatus,
 ) {
+  console.log(page,size,status);
+  
     return await this.todoService.getUserAllTodos(userId,page,size,status);
   }
 
