@@ -5,7 +5,9 @@ import { RefreshDto } from './dtos/refresh.dto';
 import { GetUser } from './decorator/get-user.decorator';
 import { JwtGuard } from './guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 
+@Throttle({default:{ttl:60000,limit:3}})
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}

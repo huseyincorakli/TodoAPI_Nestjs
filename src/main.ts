@@ -2,8 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
-import { RateLimitGuard } from './common';
-import { ConfigService } from '@nestjs/config';
+import { LoggingInterceptor } from './common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -12,8 +11,10 @@ async function bootstrap() {
     whitelist:true
   }))
 
-  const configService = app.get(ConfigService);
-  app.useGlobalGuards(new RateLimitGuard(configService))
+  app.useGlobalInterceptors(new LoggingInterceptor())
+
+  // const configService = app.get(ConfigService);
+  // app.useGlobalGuards(new RateLimitGuard(configService))
 
   //#region  Swagger Configuration
 
